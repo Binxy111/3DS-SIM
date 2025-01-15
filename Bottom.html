@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); 
+  grid-template-rows: repeat(25, 1fr); 
+  gap: 5px; 
+  border: 1px solid #ccc;
+  border-radius: 10px; 
+  padding: 10px;
+}
+
+.draggable-image {
+  width: 100%; 
+  height: 100%; 
+  border-radius: 5px; 
+  cursor: move; 
+}
+
+</style>
+</head>
+<body>
+
+<div class="grid-container">
+  <div class="grid-item">
+    <img src="your_image.jpg" alt="Your Image" class="draggable-image">
+  </div>
+</div>
+
+<script>
+const draggableImage = document.querySelector('.draggable-image');
+let isDragging = false;
+let offsetX, offsetY;
+
+draggableImage.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  offsetX = e.clientX - draggableImage.getBoundingClientRect().left;
+  offsetY = e.clientY - draggableImage.getBoundingClientRect().top;
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    const gridItem = document.elementFromPoint(e.clientX, e.clientY);
+    if (gridItem && gridItem.classList.contains('grid-item')) {
+      draggableImage.style.left = gridItem.offsetLeft + 'px';
+      draggableImage.style.top = gridItem.offsetTop + 'px';
+    } else {
+      draggableImage.style.left = e.clientX - offsetX + 'px';
+      draggableImage.style.top = e.clientY - offsetY + 'px';
+    }
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+
+</script>
+
+</body>
+</html>
