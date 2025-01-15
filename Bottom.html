@@ -12,20 +12,73 @@ body {
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(25, 1fr); 
-  grid-template-rows: repeat(5, 1fr); 
-  gap: 8px; 
-  border: 2px solid #ccc;
+  grid-template-columns: repeat(5, 1fr); 
+  grid-template-rows: repeat(25, 1fr); 
+  gap: 5px; 
+  border: 1px solid #ccc;
   border-radius: 10px; 
   padding: 10px;
 }
 
-.draggable-image {
-  width: 50px; 
-  height: 50px; 
-  border-radius: 9px;
-  border: 8px solid #fefefe;
-  cursor: move; 
+.app-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px; 
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.app-icon img {
+  max-width: 80%;
+  max-height: 80%;
+  border-radius: 5px; 
+}
+
+.iframe-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); 
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.iframe-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.home-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.buttons {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
 }
 
 </style>
@@ -33,36 +86,111 @@ body {
 <body>
 
 <div class="grid-container">
-  <div class="grid-item">
-    <img src="https://www.vgmuseum.com/features/icons/3dsicons/3dsicons-591.png" alt="eShop" class="draggable-image">
+  <div class="app-icon" data-app="game1">
+    <img src="game1_icon.png" alt="Game 1"> 
+  </div>
+  <div class="app-icon" data-app="game2">
+    <img src="game2_icon.png" alt="Game 2"> 
+  </div>
   </div>
 </div>
 
+<div class="iframe-container">
+  <div class="iframe-content">
+    <iframe id="appIframe" src="" width="800" height="600" frameborder="0"></iframe>
+    <button class="home-button" onclick="hideIframe()">❌</button>
+  </div>
+</div>
+
+<div class="buttons">
+  <button class="button" onclick="increaseGridSize()">➕</button>
+  <button class="button" onclick="decreaseGridSize()">➖</button>
+</div>
+
 <script>
-const draggableImage = document.querySelector('.draggable-image');
+const gridContainer = document.querySelector('.grid-container');
+const iframeContainer = document.querySelector('.iframe-container');
+const appIframe = document.getElementById('appIframe');
+let gridWidth = 5;
+let gridHeight = 25;
+
+function increaseGridSize() {
+  gridWidth += 1;
+  gridHeight += 1;
+  gridContainer.style.gridTemplateColumns = `repeat(${gridWidth}, 1fr)`;
+  gridContainer.style.gridTemplateRows = `repeat(${gridHeight}, 1fr)`;
+}
+
+function decreaseGridSize() {
+  if (gridWidth > 1 && gridHeight > 1) { 
+    gridWidth -= 1;
+    gridHeight -= 1;
+    gridContainer.style.gridTemplateColumns = `repeat(${gridWidth}, 1fr)`;
+    gridContainer.style.gridTemplateRows = `repeat(${gridHeight}, 1fr)`;
+  }
+}
+
+function showIframe(app) {
+  appIframe.src = `${app}_game.html`; 
+  iframeContainer.style.display = 'flex';
+}
+
+function hideIframe() {
+  appIframe.src = ""; 
+  iframeContainer.style.display = 'none';
+}
+
+gridContainer.addEventListener('click', (event) => {
+  const appIcon = event.target.closest('.app-icon');
+  if (appIcon) {
+    const appName = appIcon.getAttribute('data-app');
+    showIframe(appName);
+  }
+});
+
 let isDragging = false;
 let offsetX, offsetY;
 
-draggableImage.addEventListener('mousedown', (e) => {
-  isDragging = true;
-  offsetX = e.clientX - draggableImage.getBoundingClientRect().left;
-  offsetY = e.clientY - draggableImage.getBoundingClientRect().top;
+gridContainer.addEventListener('mousedown', (event) => {
+  const appIcon = event.target.closest('.app-icon');
+  if (appIcon) {
+    isDragging = true;
+    offsetX = event.clientX - appIcon.getBoundingClientRect().left;
+    offsetY = event.clientY - appIcon.getBoundingClientRect().top;
+  }
 });
 
-document.addEventListener('mousemove', (e) => {
+document.addEventListener('mousemove', (event) => {
   if (isDragging) {
-    const gridItem = document.elementFromPoint(e.clientX, e.clientY);
-    if (gridItem && gridItem.classList.contains('grid-item')) {
-      draggableImage.style.left = gridItem.offsetLeft + 'px';
-      draggableImage.style.top = gridItem.offsetTop + 'px';
-    } else {
-      draggableImage.style.left = e.clientX - offsetX + 'px';
-      draggableImage.style.top = e.clientY - offsetY + 'px';
+    const appIcon = document.querySelector('.dragging');
+    if (appIcon) {
+      const gridItem = document.elementFromPoint(event.clientX, event.clientY);
+      if (gridItem && gridItem.classList.contains('grid-item')) {
+        appIcon.style.left = gridItem.offsetLeft + 'px';
+        appIcon.style.top = gridItem.offsetTop + 'px';
+      } else {
+        appIcon.style.left = event.clientX - offsetX + 'px';
+        appIcon.style.top = event.clientY - offsetY + 'px';
+      }
     }
   }
 });
 
 document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    const appIcon = document.querySelector('.dragging');
+    if (appIcon) {
+      appIcon.classList.remove('dragging');
+      appIcon.style.position = 'static';
+
+      const targetCell = document.elementFromPoint(event.clientX, event.clientY);
+      if (targetCell && targetCell.classList.contains('grid-item')) {
+        const temp = appIcon.innerHTML;
+        appIcon.innerHTML = targetCell.innerHTML;
+        targetCell.innerHTML = temp;
+      }
+    }
+  }
   isDragging = false;
 });
 
@@ -70,8 +198,3 @@ document.addEventListener('mouseup', () => {
 
 </body>
 </html>
-<img class="icon" src="https://www.vgmuseum.com/features/icons/3dsicons/3dsicons-262.png" alt="Game 1">
-      <img class="icon" src="https://www.vgmuseum.com/features/icons/3dsicons/3dsicons-158.png" alt="Game 2">
-      <img class="icon" src="https://www.vgmuseum.com/features/icons/3dsicons/3dsicons-1271.png" alt="Game 3"> 
-      
-      <img class="icon" src="https://www.vgmuseum.com/features/icons/3dsicons/3dsicons-673.png" alt="YouTube">
